@@ -11,10 +11,11 @@ PROCEEDINGS = {
     'icaps03': (2003,"http://dblp.uni-trier.de/db/conf/aips/icaps2003.html"),
     'icaps04': (2004,"http://dblp.uni-trier.de/db/conf/aips/icaps2004.html"),
     'icaps05': (2005,"http://dblp.uni-trier.de/db/conf/aips/icaps2005.html"),
-    'icaps06': (2006,"http://dblp.uni-trier.de/db/conf/aips/icaps2006.html")
+    'icaps06': (2006,"http://dblp.uni-trier.de/db/conf/aips/icaps2006.html"),
+    'icaps07': (2007,"http://dblp.uni-trier.de/db/conf/aips/icaps2007.html"),
 }
 
-import scholar, urllib2, csv, random, time
+import scholar, urllib2, csv, random, time, sys
 
 try:
     from bs4 import BeautifulSoup
@@ -38,6 +39,9 @@ def gen_csv(conf, csv_file):
     #data = [['Result', 'Title', 'URL', 'Year', 'Citations', 'Versions', 'Cluster ID', 'PDF Link', 'Citations list', 'Versions list']]
     data = [['Result', 'Title', 'URL', 'Year', 'Citations', 'Versions', 'Cluster ID']]
     for title in map(lambda x: x.string, soup.findAll('span',{'class':'title'})):
+        if 'Proceedings' in title:
+            continue
+
         print "Searching for \"%s\"" % title
         year = str(PROCEEDINGS[conf][0])
 
@@ -45,12 +49,16 @@ def gen_csv(conf, csv_file):
         time.sleep(1 + random.random() * 2)
 
         scholar.main(['--cookie-file', 'random-cookie', '--after', year, '--before', year, '-t', '-c', '3', '-p', title], data)
+        print data[-1]
 
     with open(csv_file, 'wb') as f:
-        writer = csv.writer(f, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
         for d in data:
             writer.writerow(d)
 
+
+conference = sys.argv[1]
+gen_csv(conference, conference + '.csv')
 
 #gen_csv('aips90', 'aips90.csv')
 #gen_csv('aips94', 'aips94.csv')
@@ -64,3 +72,4 @@ def gen_csv(conf, csv_file):
 #gen_csv('icaps04', 'icaps04.csv')
 #gen_csv('icaps05', 'icaps05.csv')
 #gen_csv('icaps06', 'icaps06.csv')
+#gen_csv('icaps07', 'icaps07.csv')
